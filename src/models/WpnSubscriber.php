@@ -2,7 +2,7 @@
 
 namespace machour\yii2\wpn\models;
 
-use Yii;
+use Minishlink\WebPush\SubscriptionInterface;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\db\Expression;
@@ -32,7 +32,7 @@ use yii\db\Expression;
  * @property WpnSubscriberPush[] $wpnSubscriberPushes
  * @property WpnPush[] $wpnPushes
  */
-class WpnSubscriber extends ActiveRecord
+class WpnSubscriber extends ActiveRecord implements SubscriptionInterface
 {
 
     public static function tableName(): string
@@ -73,5 +73,25 @@ class WpnSubscriber extends ActiveRecord
     public function getWpnPushes(): \yii\db\ActiveQuery
     {
         return $this->hasMany(WpnPush::class, ['id' => 'wpn_push_id'])->via('wpnSubscriberPushes');
+    }
+
+    public function getEndpoint(): string
+    {
+        return $this->endpoint;
+    }
+
+    public function getPublicKey(): ?string
+    {
+        return $this->p256dh;
+    }
+
+    public function getAuthToken(): ?string
+    {
+        return $this->auth;
+    }
+
+    public function getContentEncoding(): ?string
+    {
+        return $this->content_encoding;
     }
 }

@@ -14,7 +14,7 @@
             "email": "machour@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "require": {
         "php": ">=7.3",
         "yiisoft/yii2": "~2.0.13",
@@ -27,6 +27,12 @@
         "psr-4": {
             "machour\\yii2\\wpn\\": "src"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ]
 }
 

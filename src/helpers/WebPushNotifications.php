@@ -34,17 +34,8 @@ class WebPushNotifications
         $subscribers = ArrayHelper::map(WpnSubscriber::find()->where(['subscribed' => true])->all(), 'endpoint', 'self');
 
         foreach ($subscribers as $subscriber) {
-            $subscription = Subscription::create([
-                'endpoint' => $subscriber->endpoint,
-                "keys" => [
-                    'p256dh' => $subscriber->p256dh,
-                    'auth' => $subscriber->auth,
-                ],
-                'contentEncoding' => $subscriber->content_encoding,
-            ]);
-
             try {
-                $webPush->queueNotification($subscription, $payload);
+                $webPush->queueNotification($subscriber, $payload);
             } catch (\Exception $e) {
                 $subscriber->last_error = $e->getMessage();
                 $subscriber->save();
@@ -60,8 +51,6 @@ class WebPushNotifications
         foreach ($reports as $idx => $report) {
             $endpoint = $report->getRequest()->getUri()->__toString();
             $subscriber = $subscribers[$endpoint];
-
-
             $spParams = [
                 'wpn_subscriber_id' => $subscriber->id,
                 'wpn_push_id' => $push->id,
