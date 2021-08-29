@@ -1,11 +1,19 @@
 <?php
 
-namespace common\modules\wpn;
+namespace machour\yii2\wpn;
 
+use yii\base\BootstrapInterface;
 use yii\base\InvalidConfigException;
+use yii\console\Application;
+use Yii;
 
-class Module extends \yii\base\Module
+class Module extends \yii\base\Module implements BootstrapInterface
 {
+    /**
+     * @var string the namespace that controller classes are in.
+     */
+    public $controllerNamespace = 'machour\yii2\wpn\controllers';
+
     /**
      * @var string The app name, usefull when using several instances of this module
      */
@@ -29,19 +37,32 @@ class Module extends \yii\base\Module
      */
     public $subject;
 
+
+    /**
+     * {@inheritdoc}
+     */
+    public function bootstrap($app)
+    {
+        if ($app instanceof \yii\console\Application) {
+            $this->controllerNamespace = 'machour\yii2\wpn\commands';
+        }
+    }
+
     /**
      * @throws InvalidConfigException
      */
     public function init()
     {
-        if (!$this->privateKey) {
-            throw new InvalidConfigException("The private key must be set");
-        }
-        if (!$this->publicKey) {
-            throw new InvalidConfigException("The public key must be set");
-        }
-        if (!$this->subject) {
-            throw new InvalidConfigException("The subjet must be set");
+        if (Yii::$app instanceof \yii\web\Application) {
+            if (!$this->privateKey) {
+                throw new InvalidConfigException("The private key must be set");
+            }
+            if (!$this->publicKey) {
+                throw new InvalidConfigException("The public key must be set");
+            }
+            if (!$this->subject) {
+                throw new InvalidConfigException("The subjet must be set");
+            }
         }
 
         parent::init();

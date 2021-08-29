@@ -1,10 +1,10 @@
 <?php
 
-namespace common\modules\wpn\helpers;
+namespace machour\yii2\wpn\helpers;
 
-use common\modules\wpn\models\WpnPush;
-use common\modules\wpn\models\WpnSubscriber;
-use common\modules\wpn\Module;
+use machour\yii2\wpn\models\WpnPush;
+use machour\yii2\wpn\models\WpnSubscriber;
+use machour\yii2\wpn\Module;
 use Minishlink\WebPush\Subscription;
 use Yii;
 use yii\helpers\ArrayHelper;

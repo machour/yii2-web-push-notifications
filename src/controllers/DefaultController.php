@@ -1,12 +1,12 @@
 <?php
 
-namespace common\modules\wpn\controllers;
+namespace machour\yii2\wpn\controllers;
 
-use common\modules\wpn\exceptions\SubscriberNotFound;
-use common\modules\wpn\helpers\WebPushNotifications;
-use common\modules\wpn\models\WpnPush;
-use common\modules\wpn\models\WpnSubscriber;
-use common\modules\wpn\models\WpnSubscriberPush;
+use machour\yii2\wpn\exceptions\SubscriberNotFound;
+use machour\yii2\wpn\helpers\WebPushNotifications;
+use machour\yii2\wpn\models\WpnPush;
+use machour\yii2\wpn\models\WpnSubscriber;
+use machour\yii2\wpn\models\WpnSubscriberPush;
 use yii\base\Exception;
 use yii\filters\VerbFilter;
 use yii\web\Controller;

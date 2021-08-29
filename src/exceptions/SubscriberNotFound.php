@@ -1,6 +1,6 @@
 <?php
 
-namespace common\modules\wpn\exceptions;
+namespace machour\yii2\wpn\exceptions;
 
 use yii\base\Exception;
 
