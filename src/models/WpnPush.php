@@ -60,28 +60,6 @@ class WpnPush extends ActiveRecord
         ];
     }
 
-    public function attributeLabels(): array
-    {
-        return [
-            'id' => Yii::t('models', 'ID'),
-            'title' => Yii::t('models', 'Title'),
-            'body' => Yii::t('models', 'Body'),
-            'icon' => Yii::t('models', 'Icon'),
-            'url' => Yii::t('models', 'Url'),
-            'image' => Yii::t('models', 'Image'),
-            'created_at' => Yii::t('models', 'Created At'),
-            'scheduled_at' => Yii::t('models', 'Scheduled At'),
-            'started_at' => Yii::t('models', 'Started At'),
-            'finished_at' => Yii::t('models', 'Finished At'),
-            'updated_at' => Yii::t('models', 'Updated At'),
-            'extra' => Yii::t('models', 'Extra'),
-            'tag' => Yii::t('models', 'Tag'),
-            'self' => Yii::t('models', 'Wpn push'),
-            'wpnSubscriberPushes' => Yii::t('models', 'WpnSubscriberPushes'),
-            'wpnSubscribers' => Yii::t('models', 'WpnSubscribers'),
-        ];
-    }
-
     public function getWpnSubscriberPushes(): \yii\db\ActiveQuery
     {
         return $this->hasMany(WpnSubscriberPush::class, ['wpn_push_id' => 'id']);
@@ -89,7 +67,7 @@ class WpnPush extends ActiveRecord
 
     public function getWpnSubscribers(): \yii\db\ActiveQuery
     {
-        return $this->hasMany(WpnSubscriber::class, ['id' => 'wpn_subscriber_id'])->viaTable('wpn_subscriber_push', ['wpn_push_id' => 'id']);
+        return $this->hasMany(WpnSubscriber::class, ['id' => 'wpn_subscriber_id'])->via('wpnSubscriberPushes');
     }
 
     public function getOptions(): array

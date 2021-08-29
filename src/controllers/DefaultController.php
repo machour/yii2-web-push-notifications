@@ -13,6 +13,7 @@ use yii\web\Controller;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
+use yii\web\Response;
 
 class DefaultController extends Controller
 {
@@ -55,6 +56,7 @@ class DefaultController extends Controller
                     'p256dh' => $subscription['publicKey'],
                     'content_encoding' => $subscription['contentEncoding'],
                     'subscribed' => true,
+                    'yii_user_id' => Yii::$app->user->id,
                     'ua' => $request->userAgent,
                     'ip' => $request->remoteIP,
                     'test_user' => false,
@@ -79,6 +81,9 @@ class DefaultController extends Controller
                         'ip' => $request->remoteIP,
                         'last_seen' => new Expression('NOW()'),
                     ]);
+                    if (!Yii::$app->user->isGuest) {
+                        $subscriber->yii_user_id = Yii::$app->user->id;
+                    }
 
                     if ($subscriber->save()) {
                         return $this->asJson(['success' => true, 'user_id' => $subscriber->id]);
@@ -88,7 +93,6 @@ class DefaultController extends Controller
                 }
 
                 throw new SubscriberNotFound();
-
 
             case 'DELETE':
                 $subscriber = WpnSubscriber::findOne(['endpoint' => $subscription['endpoint'], 'subscribed' => true]);

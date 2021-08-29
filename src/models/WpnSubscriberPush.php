@@ -42,24 +42,6 @@ class WpnSubscriberPush extends ActiveRecord
         ];
     }
 
-    public function attributeLabels(): array
-    {
-        return [
-            'id' => Yii::t('models', 'ID'),
-            'wpn_push_id' => Yii::t('models', 'Wpn Push'),
-            'wpn_subscriber_id' => Yii::t('models', 'Wpn Subscriber'),
-            'sent_at' => Yii::t('models', 'Sent At'),
-            'received' => Yii::t('models', 'Received'),
-            'viewed' => Yii::t('models', 'Viewed'),
-            'clicked' => Yii::t('models', 'Clicked'),
-            'dismissed' => Yii::t('models', 'Dismissed'),
-            'unsubscribed' => Yii::t('models', 'Unsubscribed'),
-            'self' => Yii::t('models', 'Wpn subscriber push'),
-            'wpnPush' => Yii::t('models', 'WpnPush'),
-            'wpnSubscriber' => Yii::t('models', 'WpnSubscriber'),
-        ];
-    }
-
     public function getWpnPush(): \yii\db\ActiveQuery
     {
         return $this->hasOne(WpnPush::class, ['id' => 'wpn_push_id']);
