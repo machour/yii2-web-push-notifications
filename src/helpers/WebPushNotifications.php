@@ -4,7 +4,6 @@ namespace machour\yii2\wpn\helpers;
 
 use machour\yii2\wpn\models\WpnCampaign;
 use machour\yii2\wpn\models\WpnSubscription;
-use machour\yii2\wpn\Module;
 use Minishlink\WebPush\WebPush;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -21,13 +20,11 @@ class WebPushNotifications
      */
     public static function sendPush(WpnCampaign $campaign)
     {
-        /** @var Module $module */
-        $module = Yii::$app->getModule('wpn');
         $auth = [
             'VAPID' => [
-                'subject' => $module->subject,
-                'publicKey' => $module->publicKey,
-                'privateKey' => $module->privateKey,
+                'subject' => $campaign->app->subject,
+                'publicKey' => $campaign->app->public_key,
+                'privateKey' => $campaign->app->private_key,
             ],
         ];
 

@@ -20,5 +20,4 @@ class Module extends \yii\base\Module implements BootstrapInterface
             $this->controllerNamespace = 'machour\yii2\wpn\commands';
         }
     }
-
 }
