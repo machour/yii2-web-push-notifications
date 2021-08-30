@@ -33,7 +33,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "machour\\yii2\\wpn\\test\\": "tests"
+            "machour\\yii2\\wpn\\tests\\": "tests"
         }
     },
     "repositories": [
