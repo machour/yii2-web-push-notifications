@@ -2,7 +2,6 @@
 
 namespace machour\yii2\wpn\models;
 
-use Yii;
 use yii\db\ActiveRecord;
 
 /**

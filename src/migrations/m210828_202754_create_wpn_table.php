@@ -18,6 +18,7 @@ class m210828_202754_create_wpn_table extends Migration
             'host' => $this->string(180)->unique()->notNull(),
             'private_key' => $this->string(50)->notNull(),
             'public_key' => $this->string(100)->notNull(),
+            'subject' => $this->string(255)->notNull(),
             'enabled' => $this->boolean()->notNull(),
             'created_at' => $this->dateTime()->notNull(),
             'updated_at' => $this->dateTime()->notNull(),
