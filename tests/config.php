@@ -9,7 +9,7 @@ return [
     'components' => [
         'db' => [
             'class' => Connection::class,
-            'dsn' => 'mysql:host=localhost;dbname=wpn_test_db;',
+            'dsn' => 'mysql:host=127.0.0.1;dbname=wpn_test_db;',
             'username' => 'root',
             'password' => 'password',
             'enableSchemaCache' => true,
