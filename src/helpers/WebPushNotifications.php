@@ -15,6 +15,10 @@ use yii\helpers\Json;
  */
 class WebPushNotifications
 {
+    /**
+     * @throws \yii\db\Exception
+     * @throws \ErrorException
+     */
     public static function sendPush(WpnCampaign $campaign)
     {
         /** @var Module $module */
@@ -29,7 +33,7 @@ class WebPushNotifications
 
         $webPush = new WebPush($auth);
 
-        $payload = json_encode($campaign->options);
+        $payload = Json::encode($campaign->options);
 
         /** @var WpnSubscription[] $subscriptions */
         $subscriptions = ArrayHelper::map(WpnSubscription::find()->where(['subscribed' => true])->all(), 'endpoint', 'self');

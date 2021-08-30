@@ -51,14 +51,6 @@ return [
     'modules' => [
         'wpn' => [
             'class' => 'machour\yii2\wpn\Module',
-            // Required. Your public & private keys for the Web Push subscriptions.
-            // These should NEVER change (or you're in for a tedious migration & migraine)
-            // Use the command helper below to generate them
-            'privateKey' => '<~88 chars>',
-            'publicKey' => '<~44 char>',
-            // Required. The subject needs to be a URL or a mailto: URL.
-            // This provides a point of contact in case the push service needs to contact you
-            'subject' => 'mailto:webmaster@mywebsite.com',
         ],
         // ...
     ],
@@ -83,8 +75,21 @@ return [
 ]
 ```
 
-You can now generate valid VAPID keys for your web configuration using the following command:
+You can now register a new application using the `./yii wpn/app/create` console command.
+Arguments are as follow:
 
 ```
-./yii wpn/keys
+USAGE
+
+yii wpn/app/create <name> <host> <subject> [...options...]
+
+- name (required): string
+  The application name
+
+- host (required): string
+  The hostname where the application will be deployed
+
+- subject (required): string
+  The contact for the application. Needs to be a URL or a mailto: URL.
+  This provides a point of contact in case the push service needs to contact you
 ```

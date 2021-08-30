@@ -87,7 +87,7 @@ class WpnCampaign extends ActiveRecord
             'tag' => $this->tag,
             'data' => [
                 'url' => $this->url,
-                'campaign_id' => $this->id,
+                'campaignId' => $this->id,
             ],
         ];
     }

@@ -1,0 +1,2 @@
+#!/bin/bash
+tsc --lib es2015,dom web-push.ts

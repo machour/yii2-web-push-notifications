@@ -146,7 +146,7 @@ class DefaultController extends Controller
         ]);
     }
 
-    public function actionServiceWorker()
+    public function actionServiceWorker(): string
     {
         Yii::$app->response->format = Response::FORMAT_RAW;
         Yii::$app->response->headers->add('Content-Type', 'application/javascript');

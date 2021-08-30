@@ -29,7 +29,8 @@ class AppController extends Controller
     /**
      * @param string $name The application name
      * @param string $host The hostname where the application will be deployed
-     * @param string $subject The contact for the application
+     * @param string $subject The contact for the application. Needs to be a URL or a mailto: URL.
+     * This provides a point of contact in case the push service needs to contact you
      */
     public function actionCreate($name, $host, $subject)
     {
