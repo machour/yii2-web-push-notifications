@@ -1,0 +1,24 @@
+namespace: machour\yii2\wpn\tests
+bootstrap: _bootstrap.php
+suites:
+    unit:
+        path: .
+        actor: UnitTester
+        modules:
+            enabled:
+                - Yii2:
+                    configFile: 'tests/config.php'
+                    part: [ orm, fixtures ]
+                # add more modules here
+                - Asserts
+        step_decorators: ~
+
+settings:
+    shuffle: true
+    lint: true
+paths:
+    tests: tests
+    output: tests/_output
+    support: tests/_support
+    data: tests/_data
+     
