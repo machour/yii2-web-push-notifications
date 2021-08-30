@@ -1,5 +1,5 @@
 <?php
-namespace machour\yii2\wpn\tests;
+namespace tests;
 
 /**
  * Inherited Methods

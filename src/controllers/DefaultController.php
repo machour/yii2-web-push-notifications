@@ -3,7 +3,7 @@
 namespace machour\yii2\wpn\controllers;
 
 use machour\yii2\wpn\exceptions\SubscriptionNotFound;
-use machour\yii2\wpn\helpers\WebPushNotifications;
+use machour\yii2\wpn\helpers\Pusher;
 use machour\yii2\wpn\models\WpnCampaign;
 use machour\yii2\wpn\models\WpnSubscription;
 use machour\yii2\wpn\models\WpnReport;
@@ -156,6 +156,6 @@ class DefaultController extends Controller
 
     private function actionPush($id)
     {
-        WebPushNotifications::sendPush(WpnCampaign::findOne($id));
+        Pusher::sendPush(WpnCampaign::findOne($id));
     }
 }

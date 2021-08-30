@@ -1,25 +1,44 @@
 <?php
 
-namespace machour\yii2\wpn\helpers;
+namespace machour\yii2\wpn\components;
 
+use machour\yii2\wpn\exceptions\InvalidApplication;
 use machour\yii2\wpn\models\WpnCampaign;
 use machour\yii2\wpn\models\WpnSubscription;
 use Minishlink\WebPush\WebPush;
 use Yii;
+use yii\base\BaseObject;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
 /**
  * @see https://autopush.readthedocs.io/en/latest/http.html#error-codes
  */
-class WebPushNotifications
+class Pusher extends BaseObject
 {
+    private $wp;
+
+    public function __construct(WebPush $wp, $config = [])
+    {
+        $this->wp = $wp;
+        parent::__construct($config);
+    }
+
+    public function test()
+    {
+        return $this->wp;
+    }
+
     /**
      * @throws \yii\db\Exception
      * @throws \ErrorException
      */
-    public static function sendPush(WpnCampaign $campaign)
+    public function sendPush(WpnCampaign $campaign)
     {
+        if (!$campaign->app->enabled) {
+            throw new InvalidApplication();
+        }
+
         $auth = [
             'VAPID' => [
                 'subject' => $campaign->app->subject,
@@ -28,8 +47,6 @@ class WebPushNotifications
             ],
         ];
 
-        $webPush = new WebPush($auth);
-
         $payload = Json::encode($campaign->options);
 
         /** @var WpnSubscription[] $subscriptions */
@@ -37,7 +54,7 @@ class WebPushNotifications
 
         foreach ($subscriptions as $subscription) {
             try {
-                $webPush->queueNotification($subscription, $payload);
+                $this->wp->queueNotification($subscription, $payload, [], $auth);
             } catch (\Exception $e) {
                 $subscription->last_error = $e->getMessage();
                 $subscription->save();
@@ -48,7 +65,7 @@ class WebPushNotifications
 
         $reports = [];
 
-        foreach ($webPush->flush() as $report) {
+        foreach ($this->wp->flush() as $report) {
             $endpoint = $report->getRequest()->getUri()->__toString();
             $subscription = $subscriptions[$endpoint];
             $spParams = [

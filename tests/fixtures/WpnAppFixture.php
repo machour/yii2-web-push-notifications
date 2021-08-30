@@ -1,6 +1,6 @@
 <?php
 
-namespace machour\yii2\wpn\tests\fixtures;
+namespace tests\fixtures;
 
 use machour\yii2\wpn\models\WpnApp;
 use yii\test\ActiveFixture;

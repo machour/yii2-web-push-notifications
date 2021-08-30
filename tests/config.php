@@ -5,6 +5,7 @@ use yii\db\Connection;
 return [
     'id' => 'wpn-tests',
     'basePath' => dirname(__DIR__),
+    'bootstrap' => ['wpn'],
     'components' => [
         'db' => [
             'class' => Connection::class,
@@ -14,5 +15,15 @@ return [
             'enableSchemaCache' => true,
             'charset' => 'latin1',
         ],
+    ],
+    'modules' => [
+        'wpn' => [
+            'class' => \machour\yii2\wpn\Module::class,
+            'components' => [
+                'pusher' => [
+                    'class' => \machour\yii2\wpn\components\Pusher::class,
+                ]
+            ]
+        ]
     ]
 ];
