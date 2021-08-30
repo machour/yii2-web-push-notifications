@@ -29,11 +29,12 @@ Configuration
 
 This module use the following tables:
 
-| Name                       | Role                                                                 |
-|----------------------------|----------------------------------------------------------------------|
-| `{{%wpn_subscriber}}`      | Represents a Web Push subscriber                                     |
-| `{{%wpn_subscriber}}`      | Represents a Web Push campaign (ie, a push you've scheduled or sent) |
-| `{{%wpn_subscriber_push}}` | Links a subscriber to a push (received ? errored ? ..)               |
+| Name                    | Role                                                                 |
+|-------------------------|----------------------------------------------------------------------|
+| `{{%wpn_app}}`          | Represents a Web Push application                                    |
+| `{{%wpn_subscription}}` | Represents a Web Push subscriber                                     |
+| `{{%wpn_campaign}}`     | Represents a Web Push campaign (ie, a push you've scheduled or sent) |
+| `{{%wpn_report}}`       | Links a subscriber to a push (received ? errored ? ..)               |
 
 Use the following migration to create them:
 ```bash
@@ -58,10 +59,6 @@ return [
             // Required. The subject needs to be a URL or a mailto: URL.
             // This provides a point of contact in case the push service needs to contact you
             'subject' => 'mailto:webmaster@mywebsite.com',
-            // Your push application name. Useful if you'll be using this shared module on different
-            // applications (ie, frontend and backend).
-            // Default to "default"
-            'app' => 'frontend',
         ],
         // ...
     ],

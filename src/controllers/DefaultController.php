@@ -2,13 +2,14 @@
 
 namespace machour\yii2\wpn\controllers;
 
-use machour\yii2\wpn\exceptions\SubscriberNotFound;
+use machour\yii2\wpn\exceptions\SubscriptionNotFound;
 use machour\yii2\wpn\helpers\WebPushNotifications;
-use machour\yii2\wpn\models\WpnPush;
-use machour\yii2\wpn\models\WpnSubscriber;
-use machour\yii2\wpn\models\WpnSubscriberPush;
+use machour\yii2\wpn\models\WpnCampaign;
+use machour\yii2\wpn\models\WpnSubscription;
+use machour\yii2\wpn\models\WpnReport;
 use yii\base\Exception;
 use yii\filters\VerbFilter;
+use yii\helpers\Json;
 use yii\web\Controller;
 use Yii;
 use yii\base\InvalidArgumentException;
@@ -32,15 +33,15 @@ class DefaultController extends Controller
     }
 
     /**
-     * @throws SubscriberNotFound
+     * @throws SubscriptionNotFound
      * @throws Exception
      */
-    public function actionSync(): \yii\web\Response
+    public function actionSync($appId): \yii\web\Response
     {
         $request = Yii::$app->request;
-        $subscription = json_decode($request->rawBody, true);
+        $data = Json::decode($request->rawBody);
 
-        if (!isset($subscription['endpoint'])) {
+        if (!isset($data['endpoint'])) {
             return $this->asJson([
                 'success' => false,
                 'message' => 'Not a subscription',
@@ -49,12 +50,12 @@ class DefaultController extends Controller
 
         switch ($request->method) {
             case 'POST':
-                $subscriber = new WpnSubscriber([
-                    'app' => $this->module->app,
-                    'endpoint' => $subscription['endpoint'],
-                    'auth' => $subscription['authToken'],
-                    'p256dh' => $subscription['publicKey'],
-                    'content_encoding' => $subscription['contentEncoding'],
+                $subscription = new WpnSubscription([
+                    'app_id' => $appId,
+                    'endpoint' => $data['endpoint'],
+                    'auth' => $data['authToken'],
+                    'public_key' => $data['publicKey'],
+                    'content_encoding' => $data['contentEncoding'],
                     'subscribed' => true,
                     'yii_user_id' => Yii::$app->user->id,
                     'ua' => $request->userAgent,
@@ -63,62 +64,69 @@ class DefaultController extends Controller
                     'last_seen' => new Expression('NOW()'),
                 ]);
 
-                if ($subscriber->save()) {
-                    return $this->asJson(['success' => true, 'user_id' => $subscriber->id]);
+                if ($subscription->save()) {
+                    return $this->asJson(['success' => true, 'user_id' => $subscription->id]);
                 } else {
-                    return $this->asJson(['success' => false, 'message' => var_export($subscriber->errors, 1)]);
+                    return $this->asJson(['success' => false, 'message' => var_export($subscription->errors, 1)]);
                 }
 
             case 'PUT':
-                $subscriber = WpnSubscriber::findOne(['endpoint' => $subscription['endpoint']]);
-                if ($subscriber) {
-                    $subscriber->setAttributes([
+                $subscription = WpnSubscription::findOne(['endpoint' => $data['endpoint']]);
+                if ($subscription) {
+                    $subscription->setAttributes([
                         'subscribed' => true,
-                        'auth' => $subscription['authToken'],
-                        'p256dh' => $subscription['publicKey'],
-                        'content_encoding' => $subscription['contentEncoding'],
+                        'auth' => $data['authToken'],
+                        'public_key' => $data['publicKey'],
+                        'content_encoding' => $data['contentEncoding'],
                         'ua' => $request->userAgent,
                         'ip' => $request->remoteIP,
                         'last_seen' => new Expression('NOW()'),
                     ]);
                     if (!Yii::$app->user->isGuest) {
-                        $subscriber->yii_user_id = Yii::$app->user->id;
+                        $subscription->yii_user_id = Yii::$app->user->id;
                     }
 
-                    if ($subscriber->save()) {
-                        return $this->asJson(['success' => true, 'user_id' => $subscriber->id]);
+                    if ($subscription->save()) {
+                        return $this->asJson(['success' => true, 'user_id' => $subscription->id]);
                     }
 
-                    return $this->asJson(['success' => false, 'message' => var_export($subscriber->errors, 1)]);
+                    return $this->asJson(['success' => false, 'message' => var_export($subscription->errors, 1)]);
                 }
 
-                throw new SubscriberNotFound();
+                throw new SubscriptionNotFound();
 
             case 'DELETE':
-                $subscriber = WpnSubscriber::findOne(['endpoint' => $subscription['endpoint'], 'subscribed' => true]);
-                if ($subscriber) {
-                    $subscriber->subscribed = false;
-                    $subscriber->reason = 'user request';
-                    $subscriber->save();
-                    return $this->asJson(['success' => true, 'user_id' => $subscriber->id]);
+                $subscription = WpnSubscription::findOne(['endpoint' => $data['endpoint'], 'subscribed' => true]);
+                if ($subscription) {
+                    $subscription->subscribed = false;
+                    $subscription->reason = 'user request';
+                    $subscription->save();
+                    return $this->asJson(['success' => true, 'user_id' => $subscription->id]);
                 }
-                throw new SubscriberNotFound();
+                throw new SubscriptionNotFound();
         }
 
     }
 
     public function actionReport(): \yii\web\Response
     {
-        $push_id = Yii::$app->request->post('pushId', false);
-        $endpoint = Yii::$app->request->post('endpoint', false);
-        $action = Yii::$app->request->post('action', false);
+        $request = Yii::$app->request;
 
-        $subscriber = WpnSubscriber::findOne(['endpoint' => $endpoint]);
-        if (!$subscriber) {
-            throw new InvalidArgumentException("Subscriber not found");
+        $campaign_id = $request->post('campaignId', false);
+        $endpoint = $request->post('endpoint', false);
+        $action = $request->post('action', false);
+
+        $campaign = WpnCampaign::findOne($campaign_id);
+        if (!$campaign) {
+            throw new InvalidArgumentException("Campaign not found");
         }
 
-        $sp = WpnSubscriberPush::findOne(['wpn_push_id' => $push_id, 'wpn_subscriber_id' => $subscriber->id]);
+        $subscription = WpnSubscription::findOne(['endpoint' => $endpoint, 'app_id' => $campaign->app_id]);
+        if (!$subscription) {
+            throw new InvalidArgumentException("Subscription not found");
+        }
+
+        $sp = WpnReport::findOne(['campaign_id' => $campaign_id, 'subscription_id' => $subscription->id]);
         if (!$sp) {
             throw new InvalidArgumentException("Push not sent to this user");
         }
@@ -134,12 +142,20 @@ class DefaultController extends Controller
         }
 
         return $this->asJson([
-            $push_id, $endpoint, $action, $sp->save()
+            $campaign_id, $endpoint, $action, $sp->save()
         ]);
+    }
+
+    public function actionServiceWorker()
+    {
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        Yii::$app->response->headers->add('Content-Type', 'application/javascript');
+
+        return file_get_contents(__DIR__ . '/../assets/sw.js');
     }
 
     private function actionPush($id)
     {
-        WebPushNotifications::sendPush(WpnPush::findOne($id));
+        WebPushNotifications::sendPush(WpnCampaign::findOne($id));
     }
 }

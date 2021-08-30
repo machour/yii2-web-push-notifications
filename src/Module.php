@@ -15,11 +15,6 @@ class Module extends \yii\base\Module implements BootstrapInterface
     public $controllerNamespace = 'machour\yii2\wpn\controllers';
 
     /**
-     * @var string The app name, usefull when using several instances of this module
-     */
-    public $app = 'default';
-
-    /**
      * @var string Your public key
      */
     public $publicKey;

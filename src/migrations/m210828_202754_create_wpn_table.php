@@ -12,16 +12,27 @@ class m210828_202754_create_wpn_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%wpn_subscriber}}', [
+        $this->createTable('{{%wpn_app}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'host' => $this->string(180)->unique()->notNull(),
+            'private_key' => $this->string(50)->notNull(),
+            'public_key' => $this->string(100)->notNull(),
+            'enabled' => $this->boolean()->notNull(),
+            'created_at' => $this->dateTime()->notNull(),
+            'updated_at' => $this->dateTime()->notNull(),
+        ]);
+
+        $this->createTable('{{%wpn_subscription}}', [
             'id' => $this->primaryKey(),
             'endpoint' => $this->string()->notNull(),
             'auth' => $this->string()->notNull(),
-            'p256dh' => $this->string()->notNull(),
+            'public_key' => $this->string()->notNull(),
             'content_encoding' => $this->string()->notNull(),
             'subscribed' => $this->boolean()->notNull(),
             'test_user' => $this->boolean(),
             'yii_user_id' => $this->integer(),
-            'app' => $this->string()->notNull(),
+            'app_id' => $this->integer()->notNull(),
             'ua' => $this->string(),
             'ip' => $this->string()->notNull(),
             'os' => $this->string(),
@@ -32,12 +43,16 @@ class m210828_202754_create_wpn_table extends Migration
             'created_at' => $this->dateTime()->notNull(),
             'updated_at' => $this->dateTime()->notNull(),
         ]);
-        $this->createIndex('uq_wpn_subscriber_endpoint', '{{%wpn_subscriber}}', 'endpoint', true);
-        $this->createIndex('uq_wpn_subscriber_yii_user_id', '{{%wpn_subscriber}}', 'yii_user_id');
-        $this->createIndex('uq_wpn_subscriber_subscribed', '{{%wpn_subscriber}}', 'subscribed');
+        $this->createIndex('uq_wpn_subscription_endpoint', '{{%wpn_subscription}}', 'endpoint', true);
+        $this->createIndex('uq_wpn_subscription_yii_user_id', '{{%wpn_subscription}}', 'yii_user_id');
+        $this->createIndex('uq_wpn_subscription_subscribed', '{{%wpn_subscription}}', 'subscribed');
+        $this->createIndex('uq_wpn_subscription_app_id', '{{%wpn_subscription}}', 'app_id');
 
-        $this->createTable('{{%wpn_push}}', [
+        $this->addForeignKey('fk_wpn_subscription_app', '{{%wpn_subscription}}', 'app_id', '{{%wpn_app}}', 'id');
+
+        $this->createTable('{{%wpn_campaign}}', [
             'id' => $this->primaryKey(),
+            'app_id' => $this->integer()->notNull(),
             'title' => $this->string()->notNull(),
             'tag' => $this->string()->unique()->notNull(),
             'body' => $this->string()->notNull(),
@@ -51,25 +66,26 @@ class m210828_202754_create_wpn_table extends Migration
             'updated_at' => $this->dateTime()->notNull(),
             'extra' => $this->text(),
         ]);
+        $this->createIndex('uq_wpn_campaign_app_id', '{{%wpn_campaign}}', 'app_id');
+        $this->addForeignKey('fk_wpn_campaign_app', '{{%wpn_campaign}}', 'app_id', '{{%wpn_app}}', 'id');
 
-        $this->createTable('{{%wpn_subscriber_push}}', [
+        $this->createTable('{{%wpn_report}}', [
             'id' => $this->primaryKey(),
-            'wpn_push_id' => $this->integer()->notNull(),
-            'wpn_subscriber_id' => $this->integer()->notNull(),
+            'campaign_id' => $this->integer()->notNull(),
+            'subscription_id' => $this->integer()->notNull(),
             'sent_at' => $this->dateTime()->notNull(),
             'received' => $this->boolean(),
             'viewed' => $this->boolean(),
             'clicked' => $this->boolean(),
             'dismissed' => $this->boolean(),
-            'unsubscribed' => $this->boolean(),
         ]);
-        $this->createIndex('uq_wpn_subscriber_push', '{{%wpn_subscriber_push}}', ['wpn_subscriber_id', 'wpn_push_id'], true);
+        $this->createIndex('uq_wpn_report', '{{%wpn_report}}', ['subscription_id', 'campaign_id'], true);
 
-        $this->createIndex('idx_wpn_subscriber_push_push', '{{%wpn_subscriber_push}}','wpn_push_id');
-        $this->addForeignKey('fk_wpn_subscriber_push_push', '{{%wpn_subscriber_push}}','wpn_push_id', '{{%wpn_push}}', 'id');
+        $this->createIndex('idx_wpn_report_campaign', '{{%wpn_report}}','campaign_id');
+        $this->addForeignKey('fk_wpn_report_campaign', '{{%wpn_report}}','campaign_id', '{{%wpn_campaign}}', 'id');
 
-        $this->createIndex('idx_wpn_subscriber_push_subscriber', '{{%wpn_subscriber_push}}','wpn_subscriber_id');
-        $this->addForeignKey('fk_wpn_subscriber_push_subscriber', '{{%wpn_subscriber_push}}','wpn_subscriber_id', '{{%wpn_subscriber}}', 'id');
+        $this->createIndex('idx_wpn_report_subscription', '{{%wpn_report}}','subscription_id');
+        $this->addForeignKey('fk_wpn_report_subscription', '{{%wpn_report}}','subscription_id', '{{%wpn_subscription}}', 'id');
     }
     
     /**
@@ -77,8 +93,9 @@ class m210828_202754_create_wpn_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%wpn_subscriber_push}}');
-        $this->dropTable('{{%wpn_push}}');
-        $this->dropTable('{{%wpn_subscriber}}');
+        $this->dropTable('{{%wpn_report}}');
+        $this->dropTable('{{%wpn_campaign}}');
+        $this->dropTable('{{%wpn_subscription}}');
+        $this->dropTable('{{%wpn_app}}');
     }
 }

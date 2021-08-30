@@ -2,19 +2,20 @@
 
 namespace machour\yii2\wpn\helpers;
 
-use machour\yii2\wpn\models\WpnPush;
-use machour\yii2\wpn\models\WpnSubscriber;
+use machour\yii2\wpn\models\WpnCampaign;
+use machour\yii2\wpn\models\WpnSubscription;
 use machour\yii2\wpn\Module;
-use Minishlink\WebPush\Subscription;
+use Minishlink\WebPush\WebPush;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
 
 /**
  * @see https://autopush.readthedocs.io/en/latest/http.html#error-codes
  */
 class WebPushNotifications
 {
-    public static function sendPush(WpnPush $push)
+    public static function sendPush(WpnCampaign $campaign)
     {
         /** @var Module $module */
         $module = Yii::$app->getModule('wpn');
@@ -26,34 +27,32 @@ class WebPushNotifications
             ],
         ];
 
-        $webPush = new \Minishlink\WebPush\WebPush($auth);
+        $webPush = new WebPush($auth);
 
-        $payload = json_encode($push->options);
+        $payload = json_encode($campaign->options);
 
-        /** @var WpnSubscriber[] $subscribers */
-        $subscribers = ArrayHelper::map(WpnSubscriber::find()->where(['subscribed' => true])->all(), 'endpoint', 'self');
+        /** @var WpnSubscription[] $subscriptions */
+        $subscriptions = ArrayHelper::map(WpnSubscription::find()->where(['subscribed' => true])->all(), 'endpoint', 'self');
 
-        foreach ($subscribers as $subscriber) {
+        foreach ($subscriptions as $subscription) {
             try {
-                $webPush->queueNotification($subscriber, $payload);
+                $webPush->queueNotification($subscription, $payload);
             } catch (\Exception $e) {
-                $subscriber->last_error = $e->getMessage();
-                $subscriber->save();
+                $subscription->last_error = $e->getMessage();
+                $subscription->save();
             }
         }
 
-        $reports = $webPush->flush();
-
         $unsubscribedIds = [];
 
-        $subscribersPushs = [];
+        $reports = [];
 
-        foreach ($reports as $idx => $report) {
+        foreach ($webPush->flush() as $report) {
             $endpoint = $report->getRequest()->getUri()->__toString();
-            $subscriber = $subscribers[$endpoint];
+            $subscription = $subscriptions[$endpoint];
             $spParams = [
-                'wpn_subscriber_id' => $subscriber->id,
-                'wpn_push_id' => $push->id,
+                'subscription_id' => $subscription->id,
+                'campaign_id' => $campaign->id,
                 'sent_at' => date('Y-m-d H:i:s'),
                 'received' => true,
             ];
@@ -61,36 +60,36 @@ class WebPushNotifications
             if (!$report->isSuccess()) {
                 $spParams['received'] = false;
                 if ($report->isSubscriptionExpired()) {
-                    $json = json_decode($report->getResponse()->getBody()->getContents(), true);
+                    $json = Json::decode($report->getResponse()->getBody()->getContents());
                     echo "<pre>";
                     var_dump($json);
                     echo "</pre>";
 
-                    $unsubscribedIds[] = $subscriber->id;
+                    $unsubscribedIds[] = $subscription->id;
 
                 } else if ($report->getResponse()->getStatusCode() === 301) {
                     $newEndpoint = $report->getResponse()->getHeaderLine('Location');
                     if ($newEndpoint) {
-                        $subscriber->endpoint = $newEndpoint;
-                        $subscriber->save();
+                        $subscription->endpoint = $newEndpoint;
+                        $subscription->save();
                     } else {
-                        $unsubscribedIds[] = $subscriber->id;
+                        $unsubscribedIds[] = $subscription->id;
                     }
                 }
             }
 
-            $subscribersPushs[] = $spParams;
+            $reports[] = $spParams;
 
         }
 
         if (count($unsubscribedIds)) {
-            WpnSubscriber::updateAll(['subscribed' => false, 'reason' => 'last push failed'], ['id' => $unsubscribedIds]);
+            WpnSubscription::updateAll(['subscribed' => false, 'reason' => 'last push failed'], ['id' => $unsubscribedIds]);
         }
 
-        if (count($subscribersPushs)) {
+        if (count($reports)) {
             Yii::$app->db->createCommand()
                 ->batchInsert(
-                    '{{%wpn_subscriber_push}}', array_keys($subscribersPushs[0]), $subscribersPushs)
+                    '{{%wpn_report}}', array_keys($reports[0]), $reports)
                 ->execute();
         }
     }
