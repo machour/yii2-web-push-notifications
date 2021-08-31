@@ -104,7 +104,8 @@ class DefaultController extends Controller
                     $subscription->save();
                     return $this->asJson(['success' => true, 'user_id' => $subscription->id]);
                 }
-                throw new SubscriptionNotFound();
+
+                return $this->asJson(['success' => false, 'message' => 'Subscription not found']);
         }
 
     }
