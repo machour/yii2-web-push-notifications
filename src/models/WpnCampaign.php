@@ -79,9 +79,8 @@ class WpnCampaign extends ActiveRecord
 
     public function getOptions(): array
     {
-        return [
+        $options = [
             'title' => $this->title,
-            'image' => $this->image,
             'body' => $this->body,
             'tag' => $this->tag,
             'data' => [
@@ -89,5 +88,19 @@ class WpnCampaign extends ActiveRecord
                 'campaignId' => $this->id,
             ],
         ];
+
+        if ($this->image) {
+            $options['image'] = $this->image;
+        }
+
+        if ($this->app->badge) {
+            $options['badge'] = $this->app->badge;
+        }
+
+        if ($this->app->icon) {
+            $options['icon'] = $this->app->icon;
+        }
+
+        return $options;
     }
 }
