@@ -11,6 +11,9 @@ class SubscriptionWidget extends Widget
     /** @var WpnApp */
     public $app;
 
+    /** @var string */
+    public $shouldMigrate;
+
     /**
      * @throws InvalidConfigException
      */
@@ -30,6 +33,7 @@ class SubscriptionWidget extends Widget
 
         return $this->render('subscription', [
             'app' => $this->app,
+            'shouldMigrate' => $this->shouldMigrate,
         ]);
     }
 }

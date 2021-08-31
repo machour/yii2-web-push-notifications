@@ -2,12 +2,17 @@
 
 /* @var $this \yii\web\View */
 /* @var $app \machour\yii2\wpn\models\WpnApp */
+/* @var $shouldMigrate string */
+
+if (!$shouldMigrate) {
+    $shouldMigrate = 'function() { return false; }';
+}
 
 $this->registerJs(<<<JS
-$(() => {
+jQuery(() => {
   var wp = new WebPush({$app->id}, "{$app->public_key}");
-  var wpnStatus = $('.wpn-status');
-  $(".wpn-subscribe").on("click", function() {
+  var wpnStatus = jQuery('.wpn-status');
+  jQuery(".wpn-subscribe").on("click", function() {
     wp.subscribe(function(subscription) {
       wpnStatus.text("Subscribed, endpoint is" + subscription.endpoint);
     }, function (error) { 
@@ -15,7 +20,7 @@ $(() => {
      });
   });
 
-  $(".wpn-unsubscribe").on("click", function() {
+  jQuery(".wpn-unsubscribe").on("click", function() {
     wp.unsubscribe(function () { 
       wpnStatus.text("Unsubscribed");
      }, function () { 
@@ -28,7 +33,7 @@ $(() => {
   }, function(error) {
     wpnStatus.text("error");
     console.error(error);
-  });
+  }, $shouldMigrate);
 
 
 });

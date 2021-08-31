@@ -62,10 +62,11 @@ var WebPush = /** @class */ (function () {
             this.log("ServiceWorker registration failed: ", err);
         });
     };
-    WebPush.prototype.checkSubscription = function (successCb, failureCb) {
+    WebPush.prototype.checkSubscription = function (successCb, failureCb, shouldMigrate) {
         var _this = this;
         if (successCb === void 0) { successCb = function (status) { }; }
         if (failureCb === void 0) { failureCb = function (error) { }; }
+        if (shouldMigrate === void 0) { shouldMigrate = function (context) { return false; }; }
         navigator.serviceWorker.ready
             .then(function (serviceWorkerRegistration) {
             return serviceWorkerRegistration.pushManager.getSubscription();
@@ -76,30 +77,21 @@ var WebPush = /** @class */ (function () {
                 successCb(SubscriptionStatus.UNSUBSCRIBED);
                 return;
             }
-            /** MIGRATION
-            const platformDetails = localStorage.getItem("platformDetails");
-    
-            // Truepush migration: silently unsubscribe & resubscribe the user
-            if (platformDetails) {
-              localStorage.setItem("_platformDetails", platformDetails);
-              localStorage.removeItem("platformDetails");
-    
-              return subscription
-                .unsubscribe()
-                .then(() => navigator.serviceWorker.ready)
-                .then(serviceWorkerRegistration =>
-                  serviceWorkerRegistration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
-                  })
-                )
-                .then(subscription => {
-                  return this.sync(subscription, "POST");
+            // We are subscribed, give the possibility to migrate from an old provider
+            if (shouldMigrate(_this)) {
+                return subscription
+                    .unsubscribe()
+                    .then(function () { return navigator.serviceWorker.ready; })
+                    .then(function (serviceWorkerRegistration) {
+                    return serviceWorkerRegistration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: _this.urlBase64ToUint8Array(_this.publicKey)
+                    });
                 })
-                .then(json => {
-                  this.changePushButtonState("migrated as " + json.id);
+                    .then(function (subscription) {
+                    return _this.sync(subscription, "POST");
                 });
-            }*/
+            }
             return _this.sync(subscription, "PUT");
         })
             .then(function (subscription) { return subscription && successCb(SubscriptionStatus.SUBSCRIBED); }) // Set your UI to show they have subscribed for push messages

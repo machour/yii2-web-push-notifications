@@ -8,6 +8,8 @@
 
 An extension for implementing Web Push Notifications on your website in a breeze.
 
+Documentation is at [docs/README.md](docs/README.md)
+
 [![Latest Stable Version](https://poser.pugx.org/machour/yii2-web-push-notifications/v/stable.png)](https://packagist.org/packages/machour/yii2-web-push-notifications)
 [![Total Downloads](https://poser.pugx.org/machour/yii2-web-push-notifications/downloads.png)](https://packagist.org/packages/machour/yii2-web-push-notifications)
 [![tests](https://github.com/machour/yii2-web-push-notifications/workflows/tests/badge.svg)](https://github.com/machour/yii2-web-push-notifications/actions?query=workflow%3Atests)

@@ -69,7 +69,7 @@ class WebPush {
     );
   }
 
-  checkSubscription(successCb = (status: SubscriptionStatus) => {}, failureCb = (error) => {}) {
+  checkSubscription(successCb = (status: SubscriptionStatus) => {}, failureCb = (error) => {}, shouldMigrate = (context) => false) {
     navigator.serviceWorker.ready
       .then(serviceWorkerRegistration =>
         serviceWorkerRegistration.pushManager.getSubscription()
@@ -81,30 +81,21 @@ class WebPush {
           return;
         }
 
-        /** MIGRATION
-        const platformDetails = localStorage.getItem("platformDetails");
-
-        // Truepush migration: silently unsubscribe & resubscribe the user
-        if (platformDetails) {
-          localStorage.setItem("_platformDetails", platformDetails);
-          localStorage.removeItem("platformDetails");
-
+        // We are subscribed, give the possibility to migrate from an old provider
+        if (shouldMigrate(this)) {
           return subscription
-            .unsubscribe()
-            .then(() => navigator.serviceWorker.ready)
-            .then(serviceWorkerRegistration =>
-              serviceWorkerRegistration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
-              })
-            )
-            .then(subscription => {
-              return this.sync(subscription, "POST");
-            })
-            .then(json => {
-              this.changePushButtonState("migrated as " + json.id);
-            });
-        }*/
+              .unsubscribe()
+              .then(() => navigator.serviceWorker.ready)
+              .then(serviceWorkerRegistration =>
+                  serviceWorkerRegistration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
+                  })
+              )
+              .then(subscription => {
+                return this.sync(subscription, "POST");
+              });
+        }
 
         return this.sync(subscription, "PUT");
       })
