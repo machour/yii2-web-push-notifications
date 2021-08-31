@@ -24,14 +24,10 @@ class Pusher extends BaseObject
         parent::__construct($config);
     }
 
-    public function test()
-    {
-        return $this->wp;
-    }
-
     /**
      * @throws \yii\db\Exception
      * @throws \ErrorException
+     * @throws InvalidApplication
      */
     public function sendPush(WpnCampaign $campaign)
     {
@@ -50,7 +46,13 @@ class Pusher extends BaseObject
         $payload = Json::encode($campaign->options);
 
         /** @var WpnSubscription[] $subscriptions */
-        $subscriptions = ArrayHelper::map(WpnSubscription::find()->where(['subscribed' => true])->all(), 'endpoint', 'self');
+        $subscriptions = ArrayHelper::index(
+            WpnSubscription::find()
+                ->where(['subscribed' => true, 'app_id' => $campaign->app_id])
+                ->orderBy(['last_seen' => SORT_DESC])
+                ->all(),
+            'endpoint'
+        );
 
         foreach ($subscriptions as $subscription) {
             try {
@@ -77,16 +79,11 @@ class Pusher extends BaseObject
 
             if (!$report->isSuccess()) {
                 $spParams['received'] = false;
+                $response = $report->getResponse();
                 if ($report->isSubscriptionExpired()) {
-                    $json = Json::decode($report->getResponse()->getBody()->getContents());
-                    echo "<pre>";
-                    var_dump($json);
-                    echo "</pre>";
-
                     $unsubscribedIds[] = $subscription->id;
-
-                } else if ($report->getResponse()->getStatusCode() === 301) {
-                    $newEndpoint = $report->getResponse()->getHeaderLine('Location');
+                } else if ($response->getStatusCode() === 301) {
+                    $newEndpoint = $response->getHeaderLine('Location');
                     if ($newEndpoint) {
                         $subscription->endpoint = $newEndpoint;
                         $subscription->save();
@@ -101,7 +98,10 @@ class Pusher extends BaseObject
         }
 
         if (count($unsubscribedIds)) {
-            WpnSubscription::updateAll(['subscribed' => false, 'reason' => 'last push failed'], ['id' => $unsubscribedIds]);
+            WpnSubscription::updateAll([
+                'subscribed' => false,
+                'reason' => 'last push failed'
+            ], ['id' => $unsubscribedIds]);
         }
 
         if (count($reports)) {

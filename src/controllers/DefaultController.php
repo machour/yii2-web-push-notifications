@@ -2,8 +2,8 @@
 
 namespace machour\yii2\wpn\controllers;
 
+use machour\yii2\wpn\components\Pusher;
 use machour\yii2\wpn\exceptions\SubscriptionNotFound;
-use machour\yii2\wpn\helpers\Pusher;
 use machour\yii2\wpn\models\WpnCampaign;
 use machour\yii2\wpn\models\WpnSubscription;
 use machour\yii2\wpn\models\WpnReport;
@@ -14,6 +14,7 @@ use yii\web\Controller;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class DefaultController extends Controller
@@ -154,8 +155,16 @@ class DefaultController extends Controller
         return file_get_contents(__DIR__ . '/../assets/sw.js');
     }
 
-    private function actionPush($id)
+    public function actionPush($id)
     {
-        Pusher::sendPush(WpnCampaign::findOne($id));
+        $campaign = WpnCampaign::findOne($id);
+        if (!$campaign) {
+            throw new NotFoundHttpException("Unknown Campaign");
+        }
+
+        /** @var Pusher $pusher */
+        $pusher = $this->module->get('pusher');
+
+        $pusher->sendPush($campaign);
     }
 }
