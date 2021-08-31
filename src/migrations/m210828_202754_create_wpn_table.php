@@ -20,6 +20,8 @@ class m210828_202754_create_wpn_table extends Migration
             'public_key' => $this->string(100)->notNull(),
             'subject' => $this->string(255)->notNull(),
             'enabled' => $this->boolean()->notNull(),
+            'icon' => $this->string()->null(),
+            'badge' => $this->string()->null(),
             'created_at' => $this->dateTime()->notNull(),
             'updated_at' => $this->dateTime()->notNull(),
         ]);
@@ -57,7 +59,6 @@ class m210828_202754_create_wpn_table extends Migration
             'title' => $this->string()->notNull(),
             'tag' => $this->string()->unique()->notNull(),
             'body' => $this->string()->notNull(),
-            'icon' => $this->string(),
             'url' => $this->string(),
             'image' => $this->string(),
             'created_at' => $this->dateTime()->notNull(),

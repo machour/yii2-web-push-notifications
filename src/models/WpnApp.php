@@ -16,6 +16,8 @@ use yii\db\Expression;
  * @property string $public_key
  * @property string $subject
  * @property int $enabled
+ * @property string $icon
+ * @property string $badge
  * @property string $created_at
  * @property string $updated_at
  *
@@ -47,7 +49,7 @@ class WpnApp extends ActiveRecord
     {
         return [
             [['name', 'host', 'enabled', 'public_key', 'private_key', 'subject'], 'required'],
-            [['name', 'subject'], 'string', 'max' => 255],
+            [['name', 'subject', 'icon', 'badge'], 'string', 'max' => 255],
             [['host'], 'string', 'max' => 180],
             [['private_key'], 'string', 'max' => 50],
             [['public_key'], 'string', 'max' => 100],
