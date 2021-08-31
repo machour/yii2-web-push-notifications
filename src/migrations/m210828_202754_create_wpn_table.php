@@ -24,11 +24,11 @@ class m210828_202754_create_wpn_table extends Migration
             'badge' => $this->string()->null(),
             'created_at' => $this->dateTime()->notNull(),
             'updated_at' => $this->dateTime()->notNull(),
-        ]);
+        ], 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB');
 
         $this->createTable('{{%wpn_subscription}}', [
             'id' => $this->primaryKey(),
-            'endpoint' => $this->string()->notNull(),
+            'endpoint' => $this->string(255)->notNull(),
             'auth' => $this->string()->notNull(),
             'public_key' => $this->string()->notNull(),
             'content_encoding' => $this->string()->notNull(),
@@ -45,7 +45,7 @@ class m210828_202754_create_wpn_table extends Migration
             'reason' => $this->string(),
             'created_at' => $this->dateTime()->notNull(),
             'updated_at' => $this->dateTime()->notNull(),
-        ]);
+        ], 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB');
         $this->createIndex('uq_wpn_subscription_endpoint', '{{%wpn_subscription}}', 'endpoint', true);
         $this->createIndex('uq_wpn_subscription_yii_user_id', '{{%wpn_subscription}}', 'yii_user_id');
         $this->createIndex('uq_wpn_subscription_subscribed', '{{%wpn_subscription}}', 'subscribed');
@@ -57,7 +57,7 @@ class m210828_202754_create_wpn_table extends Migration
             'id' => $this->primaryKey(),
             'app_id' => $this->integer()->notNull(),
             'title' => $this->string()->notNull(),
-            'tag' => $this->string()->unique()->notNull(),
+            'tag' => $this->string(180)->unique()->notNull(),
             'body' => $this->string()->notNull(),
             'url' => $this->string(),
             'image' => $this->string(),
