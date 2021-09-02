@@ -18,7 +18,8 @@
     "require": {
         "php": ">=7.3",
         "yiisoft/yii2": "~2.0.13",
-        "minishlink/web-push": "^6.0"
+        "minishlink/web-push": "^6.0",
+        "matomo/device-detector": "^4.3"
     },
     "require-dev": {
         "codeception/codeception": "^4.1",

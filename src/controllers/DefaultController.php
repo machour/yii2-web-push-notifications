@@ -2,6 +2,7 @@
 
 namespace machour\yii2\wpn\controllers;
 
+use DeviceDetector\DeviceDetector;
 use machour\yii2\wpn\components\Pusher;
 use machour\yii2\wpn\exceptions\SubscriptionNotFound;
 use machour\yii2\wpn\models\WpnCampaign;
@@ -19,6 +20,18 @@ use yii\web\Response;
 
 class DefaultController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if ($action->id == 'report') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
+
     public function behaviors(): array
     {
         return [
@@ -51,6 +64,7 @@ class DefaultController extends Controller
 
         switch ($request->method) {
             case 'POST':
+
                 $subscription = new WpnSubscription([
                     'app_id' => $appId,
                     'endpoint' => $data['endpoint'],
@@ -64,6 +78,11 @@ class DefaultController extends Controller
                     'test_user' => false,
                     'last_seen' => new Expression('NOW()'),
                 ]);
+
+                $dd = new DeviceDetector($subscription->ua);
+                $dd->parse();
+                $subscription->os = $dd->getOs('name');
+                $subscription->browser = $dd->getClient('name');
 
                 if ($subscription->save()) {
                     return $this->asJson(['success' => true, 'user_id' => $subscription->id]);
@@ -113,10 +132,11 @@ class DefaultController extends Controller
     public function actionReport(): \yii\web\Response
     {
         $request = Yii::$app->request;
+        $data = Json::decode($request->rawBody);
 
-        $campaign_id = $request->post('campaignId', false);
-        $endpoint = $request->post('endpoint', false);
-        $action = $request->post('action', false);
+        $campaign_id = $data['campaignId'];
+        $endpoint = $data['endpoint'];
+        $action = $data['action'];
 
         $campaign = WpnCampaign::findOne($campaign_id);
         if (!$campaign) {

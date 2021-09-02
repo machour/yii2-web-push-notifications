@@ -43,20 +43,25 @@ class Pusher extends BaseObject
             ],
         ];
 
-        $payload = Json::encode($campaign->options);
+
+
+        $query = WpnSubscription::find()
+                ->where(['subscribed' => true, 'app_id' => $campaign->app_id])
+                ->orderBy(['last_seen' => SORT_DESC]);
+
+        if ($campaign->test_only) {
+            $query->andWhere(['test_user' => 1]);
+        }
 
         /** @var WpnSubscription[] $subscriptions */
-        $subscriptions = ArrayHelper::index(
-            WpnSubscription::find()
-                ->where(['subscribed' => true, 'app_id' => $campaign->app_id])
-                ->orderBy(['last_seen' => SORT_DESC])
-                ->all(),
-            'endpoint'
-        );
+        $subscriptions = ArrayHelper::index($query->all(), 'endpoint');
 
         foreach ($subscriptions as $subscription) {
             try {
-                $this->wp->queueNotification($subscription, $payload, [], $auth);
+                $options = $campaign->options;
+                $options['data']['endpoint'] = $subscription->endpoint;
+
+                $this->wp->queueNotification($subscription, Json::encode($options), [], $auth);
             } catch (\Exception $e) {
                 $subscription->last_error = $e->getMessage();
                 $subscription->save();

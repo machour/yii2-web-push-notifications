@@ -15,7 +15,6 @@ use yii\db\ActiveRecord;
  * @property int $viewed
  * @property int $clicked
  * @property int $dismissed
- * @property int $unsubscribed
  *
  * @property WpnCampaign $campaign
  * @property WpnSubscription $subscription
@@ -34,7 +33,7 @@ class WpnReport extends ActiveRecord
             [['campaign_id', 'subscription_id', 'sent_at'], 'required'],
             [['campaign_id', 'subscription_id'], 'integer'],
             [['sent_at'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
-            [['received', 'viewed', 'clicked', 'dismissed', 'unsubscribed'], 'boolean'],
+            [['received', 'viewed', 'clicked', 'dismissed'], 'boolean'],
             [['subscription_id', 'campaign_id'], 'unique', 'targetAttribute' => ['subscription_id', 'campaign_id']],
             [['campaign_id'], 'exist', 'skipOnError' => true, 'targetClass' => WpnCampaign::class, 'targetAttribute' => ['campaign_id' => 'id']],
             [['subscription_id'], 'exist', 'skipOnError' => true, 'targetClass' => WpnSubscription::class, 'targetAttribute' => ['subscription_id' => 'id']],

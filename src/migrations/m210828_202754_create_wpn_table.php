@@ -61,6 +61,7 @@ class m210828_202754_create_wpn_table extends Migration
             'body' => $this->string()->notNull(),
             'url' => $this->string(),
             'image' => $this->string(),
+            'test_only' => $this->boolean(),
             'created_at' => $this->dateTime()->notNull(),
             'scheduled_at' => $this->dateTime()->notNull(),
             'started_at' => $this->dateTime(),

@@ -9,41 +9,26 @@ class WebPush {
   readonly appId;
   readonly publicKey;
   readonly controller;
-  readonly localStorageKey;
+
+  private readonly LS = {
+    ENDPOINT: "yii2-wpn-endpoint",
+    LAST_SYNC: "yii2-wpn-last_sync",
+  };
+  private readonly syncInterval: number;
 
   constructor(
     appId: number,
     publicKey: string,
     controller = "/wpn/default",
-    localStorageKey = "yii2-wpn-endpoint"
+    syncInterval = 1000 * 60 * 10
   ) {
     this.appId = appId;
     this.publicKey = publicKey;
     this.controller = controller;
-    this.localStorageKey = localStorageKey;
-
-    const wpnBroadcast = new BroadcastChannel("yii2-web-push-notifications");
-    wpnBroadcast.onmessage = event => {
-      const { action, campaignId } = event.data;
-
-      $.post(
-        `${this.controller}/report?appId=${this.appId}`,
-        {
-          endpoint: localStorage.getItem(this.localStorageKey),
-          action,
-          campaignId,
-          ...this.getCsrfParams()
-        },
-        () => {
-          this.log("Action reported", action);
-        }
-      ).fail(error => {
-        this.log("Action reporting failed", action, error);
-      });
-    };
+    this.syncInterval = syncInterval;
   }
 
-  setupRegistration(swPath = "/sw.js") {
+  setupRegistration(swPath = "/sw.js", successCb = (status: SubscriptionStatus) => {}, failureCb = (error) => {}, shouldMigrate = (context) => false) {
     if (!("serviceWorker" in navigator)) {
       this.log("Service workers are not supported by this browser");
       return false;
@@ -59,11 +44,17 @@ class WebPush {
     }
 
     navigator.serviceWorker.register(swPath).then(
-      registration => {
-        this.log("ServiceWorker registration success: ", registration);
-        this.checkSubscription();
+      () => {
+        const lastSync = parseInt(localStorage.getItem(this.LS.LAST_SYNC));
+        const now = Date.now();
+
+        if (!lastSync || (now - lastSync > this.syncInterval)) {
+          console.log(now, lastSync, now - lastSync, this.syncInterval)
+          this.checkSubscription(successCb, failureCb, shouldMigrate);
+          localStorage.setItem(this.LS.LAST_SYNC, String(now));
+        }
       },
-      function(err) {
+      (err) => {
         this.log("ServiceWorker registration failed: ", err);
       }
     );
@@ -120,7 +111,7 @@ class WebPush {
       .then((subscription: PushSubscription) => {
         // Subscription was successful
         // create subscription on your server
-        localStorage.setItem(this.localStorageKey, subscription.endpoint);
+        localStorage.setItem(this.LS.ENDPOINT, subscription.endpoint);
         return this.sync(subscription, "POST");
       })
       .then(
@@ -162,7 +153,7 @@ class WebPush {
       })
       .then(subscription => subscription.unsubscribe())
       .then(() => {
-        localStorage.removeItem(this.localStorageKey);
+        localStorage.removeItem(this.LS.ENDPOINT);
         success();
       })
       .catch(e => {
@@ -180,7 +171,7 @@ class WebPush {
       "aesgcm"
     ])[0];
 
-    localStorage.setItem(this.localStorageKey, subscription.endpoint);
+    localStorage.setItem(this.LS.ENDPOINT, subscription.endpoint);
     return new Promise((resolve, reject) => {
       $.ajax({
         url: `${this.controller}/sync?appId=${this.appId}`,

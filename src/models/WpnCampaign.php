@@ -14,6 +14,7 @@ use yii\db\Expression;
  * @property string $title
  * @property string $body
  * @property string $url
+ * @property boolean $test_only
  * @property string $image
  * @property string $created_at
  * @property string $scheduled_at
@@ -57,6 +58,7 @@ class WpnCampaign extends ActiveRecord
             [['app_id'], 'integer'],
             [['scheduled_at', 'started_at', 'finished_at'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
             [['extra'], 'string'],
+            [['test_only'], 'boolean'],
             [['title', 'body', 'url', 'image', 'tag'], 'string', 'max' => 255],
             [['app_id'], 'exist', 'skipOnError' => true, 'targetClass' => WpnApp::class, 'targetAttribute' => ['app_id' => 'id']],
         ];

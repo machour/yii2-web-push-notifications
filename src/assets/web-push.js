@@ -17,28 +17,24 @@ var SubscriptionStatus;
     SubscriptionStatus["BLOCKED"] = "blocked";
 })(SubscriptionStatus || (SubscriptionStatus = {}));
 var WebPush = /** @class */ (function () {
-    function WebPush(appId, publicKey, controller, localStorageKey) {
-        var _this = this;
+    function WebPush(appId, publicKey, controller, syncInterval) {
         if (controller === void 0) { controller = "/wpn/default"; }
-        if (localStorageKey === void 0) { localStorageKey = "yii2-wpn-endpoint"; }
+        if (syncInterval === void 0) { syncInterval = 1000 * 60 * 10; }
+        this.LS = {
+            ENDPOINT: "yii2-wpn-endpoint",
+            LAST_SYNC: "yii2-wpn-last_sync"
+        };
         this.appId = appId;
         this.publicKey = publicKey;
         this.controller = controller;
-        this.localStorageKey = localStorageKey;
-        var wpnBroadcast = new BroadcastChannel("yii2-web-push-notifications");
-        wpnBroadcast.onmessage = function (event) {
-            var _a = event.data, action = _a.action, campaignId = _a.campaignId;
-            $.post(_this.controller + "/report?appId=" + _this.appId, __assign({ endpoint: localStorage.getItem(_this.localStorageKey), action: action,
-                campaignId: campaignId }, _this.getCsrfParams()), function () {
-                _this.log("Action reported", action);
-            }).fail(function (error) {
-                _this.log("Action reporting failed", action, error);
-            });
-        };
+        this.syncInterval = syncInterval;
     }
-    WebPush.prototype.setupRegistration = function (swPath) {
+    WebPush.prototype.setupRegistration = function (swPath, successCb, failureCb, shouldMigrate) {
         var _this = this;
         if (swPath === void 0) { swPath = "/sw.js"; }
+        if (successCb === void 0) { successCb = function (status) { }; }
+        if (failureCb === void 0) { failureCb = function (error) { }; }
+        if (shouldMigrate === void 0) { shouldMigrate = function (context) { return false; }; }
         if (!("serviceWorker" in navigator)) {
             this.log("Service workers are not supported by this browser");
             return false;
@@ -55,11 +51,16 @@ var WebPush = /** @class */ (function () {
             this.log("Notifications are denied by the user");
             return false;
         }
-        navigator.serviceWorker.register(swPath).then(function (registration) {
-            _this.log("ServiceWorker registration success: ", registration);
-            _this.checkSubscription();
+        navigator.serviceWorker.register(swPath).then(function () {
+            var lastSync = parseInt(localStorage.getItem(_this.LS.LAST_SYNC));
+            var now = Date.now();
+            if (!lastSync || (now - lastSync > _this.syncInterval)) {
+                console.log(now, lastSync, now - lastSync, _this.syncInterval);
+                _this.checkSubscription(successCb, failureCb, shouldMigrate);
+                localStorage.setItem(_this.LS.LAST_SYNC, String(now));
+            }
         }, function (err) {
-            this.log("ServiceWorker registration failed: ", err);
+            _this.log("ServiceWorker registration failed: ", err);
         });
     };
     WebPush.prototype.checkSubscription = function (successCb, failureCb, shouldMigrate) {
@@ -115,7 +116,7 @@ var WebPush = /** @class */ (function () {
             .then(function (subscription) {
             // Subscription was successful
             // create subscription on your server
-            localStorage.setItem(_this.localStorageKey, subscription.endpoint);
+            localStorage.setItem(_this.LS.ENDPOINT, subscription.endpoint);
             return _this.sync(subscription, "POST");
         })
             .then(function (subscription) { return success(subscription); }) // update your UI
@@ -157,7 +158,7 @@ var WebPush = /** @class */ (function () {
         })
             .then(function (subscription) { return subscription.unsubscribe(); })
             .then(function () {
-            localStorage.removeItem(_this.localStorageKey);
+            localStorage.removeItem(_this.LS.ENDPOINT);
             success();
         })["catch"](function (e) {
             // We failed to unsubscribe, this can lead to
@@ -173,7 +174,7 @@ var WebPush = /** @class */ (function () {
         var contentEncoding = (PushManager.supportedContentEncodings || [
             "aesgcm"
         ])[0];
-        localStorage.setItem(this.localStorageKey, subscription.endpoint);
+        localStorage.setItem(this.LS.ENDPOINT, subscription.endpoint);
         return new Promise(function (resolve, reject) {
             $.ajax({
                 url: _this.controller + "/sync?appId=" + _this.appId,

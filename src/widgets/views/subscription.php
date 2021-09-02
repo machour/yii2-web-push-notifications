@@ -28,7 +28,7 @@ jQuery(() => {
       });
   });
 
-  wp.checkSubscription(function(status) {
+  wp.setupRegistration("/sw.js", function(status) {
     wpnStatus.text(status);
   }, function(error) {
     wpnStatus.text("error");
