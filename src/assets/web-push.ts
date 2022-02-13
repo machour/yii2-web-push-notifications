@@ -5,7 +5,7 @@ enum SubscriptionStatus {
   BLOCKED = 'blocked',
 }
 
-class WebPush {
+export class WebPush {
   readonly appId;
   readonly publicKey;
   readonly controller;

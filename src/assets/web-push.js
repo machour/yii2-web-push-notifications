@@ -1,3 +1,4 @@
+"use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -9,6 +10,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+exports.__esModule = true;
 var SubscriptionStatus;
 (function (SubscriptionStatus) {
     SubscriptionStatus["SUBSCRIBED"] = "subscribed";
@@ -244,3 +246,4 @@ var WebPush = /** @class */ (function () {
     };
     return WebPush;
 }());
+exports.WebPush = WebPush;
