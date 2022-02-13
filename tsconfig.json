@@ -1,0 +1,22 @@
+{
+    "lib": [
+        "dom",
+        "es5",
+        "scripthost",
+        "es2015.promise"
+    ],
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "noEmitOnError": false,
+        "lib": [
+            "dom",
+            "es5",
+            "scripthost",
+            "es2015.promise"
+        ]
+    }
+}

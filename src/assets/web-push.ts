@@ -195,7 +195,7 @@ class WebPush {
   }
 
   checkNotificationPermission() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (Notification.permission === "denied") {
         return reject(new Error("Push messages are blocked."));
       }
